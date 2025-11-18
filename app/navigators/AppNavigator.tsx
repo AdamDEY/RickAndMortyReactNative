@@ -9,9 +9,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
 import Config from "@/config"
 import { ErrorBoundary } from "@/screens/ErrorScreen/ErrorBoundary"
-import { WelcomeScreen } from "@/screens/WelcomeScreen"
+import { DetailEpisodeScreen } from "@/screens/RickAndMorty/DetailEpisodeScreen"
 import { useAppTheme } from "@/theme/context"
 
+import { BottomTabNavigator } from "./BottomTabNavigator.tsx/BottomTabNavigator"
 import type { AppStackParamList, NavigationProps } from "./navigationTypes"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 
@@ -21,7 +22,6 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
  */
 const exitRoutes = Config.exitRoutes
 
-// Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator<AppStackParamList>()
 
 const AppStack = () => {
@@ -39,7 +39,14 @@ const AppStack = () => {
         },
       }}
     >
-      <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="Main" component={BottomTabNavigator} />
+      <Stack.Screen
+        name="DetailEpisode"
+        component={DetailEpisodeScreen}
+        options={{
+          headerShown: true,
+        }}
+      />
       {/** 🔥 Your screens go here */}
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>

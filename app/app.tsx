@@ -21,8 +21,13 @@ import "./utils/gestureHandler"
 import { useEffect, useState } from "react"
 import { useFonts } from "expo-font"
 import * as Linking from "expo-linking"
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister"
+import { QueryClient } from "@tanstack/react-query"
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 
 import { initI18n } from "./i18n"
 import { AppNavigator } from "./navigators/AppNavigator"
@@ -54,7 +59,27 @@ const config = {
     },
   },
 }
-
+const persister = createSyncStoragePersister({
+  storage: {
+    getItem: (key: string) => storage.loadString(key),
+    setItem: (key: string, value: string) => {
+      storage.saveString(key, value)
+    },
+    removeItem: (key: string) => {
+      storage.remove(key)
+    },
+  },
+})
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
+      persist: true,
+    },
+  },
+})
 /**
  * This is the root component of our app.
  * @param {AppProps} props - The props for the `App` component.
@@ -93,16 +118,33 @@ export function App() {
 
   // otherwise, we're ready to render the app
   return (
-    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <KeyboardProvider>
-        <ThemeProvider>
-          <AppNavigator
-            linking={linking}
-            initialState={initialNavigationState}
-            onStateChange={onNavigationStateChange}
-          />
-        </ThemeProvider>
-      </KeyboardProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <KeyboardProvider>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{
+              persister,
+              maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+              dehydrateOptions: {
+                shouldDehydrateQuery: (query) => {
+                  // Only persist episodes data
+                  return query.queryKey[0] === "episodes"
+                },
+              },
+            }}
+          >
+            <ThemeProvider>
+              <AppNavigator
+                linking={linking}
+                initialState={initialNavigationState}
+                onStateChange={onNavigationStateChange}
+              />
+            </ThemeProvider>
+            {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+          </PersistQueryClientProvider>
+        </KeyboardProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }

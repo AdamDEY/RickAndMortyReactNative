@@ -7,6 +7,11 @@ import {
 } from "@react-navigation/native"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 
+// Main Tab Navigator types
+export type MainTabParamList = {
+  Episodes: undefined
+  Favourites: undefined
+}
 // Demo Tab Navigator types
 export type DemoTabParamList = {
   DemoCommunity: undefined
@@ -19,6 +24,8 @@ export type DemoTabParamList = {
 export type AppStackParamList = {
   Welcome: undefined
   Login: undefined
+  Main: NavigatorScreenParams<MainTabParamList>
+  DetailEpisode: { episode: import("@/models/episode").Episode }
   Demo: NavigatorScreenParams<DemoTabParamList>
   // 🔥 Your screens go here
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
